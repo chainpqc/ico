@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+pragma solidity ^0.8.0;
+
 
 contract WrappedChainPQCToken is ERC20 {
     address public owner;
@@ -26,6 +28,7 @@ contract WrappedChainPQCToken is ERC20 {
     }
     function burn(address executor, address tokenOwner, uint256 amount) public {
         require(executor == owner, "Burning is reserved for owner");
+        require(msg.sender == tokenOwner, "Only a sender can burn his own tokens");
         _burn(tokenOwner, amount);
     }
 }
