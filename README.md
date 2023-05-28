@@ -1,10 +1,9 @@
-# ico
+# ICO
 
-These are smart contracts for ICO of chainPQC.
+Here are the smart contracts for the ICO of ChainPQC.
 
-The smart contracts are deployed in Ethereum network.
+The smart contracts are deployed on the Ethereum network.
 
-Token is called WPQC is will be 1:1 exchanged to PQC coin which is native coin of ChianPQC blockchain.
+The token, called WPQC, will be exchanged at a 1:1 ratio with the PQC coin, which is the native coin of the ChainPQC blockchain.
 
-ChainPQC blockchain is using Post Quantum Cryptography to defend from Quantum Computers algorithms.
-
+The ChainPQC blockchain utilizes Post-Quantum Cryptography to defend against Quantum Computer algorithms.
