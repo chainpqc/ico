@@ -1,44 +1,29 @@
 // SPDX-License-Identifier: MIT
 
+// This contract is designed to manage its ICO.
+// The contract uses the OpenZeppelin library for ERC20, Ownable, and SafeMath functionality.
+// The contract ensures that only the owner can mint and burn tokens, and it limits the total supply of tokens.
+// The ICO has a minimum investment amount, a minimum cap, and a maximum number of tokens that can be sold.
+// The price of the tokens increases over time during the ICO.
+// The contract also provides functions for the owner to withdraw the raised ether and for users to get a refund if the minimum cap is not reached.
+// These features help to protect against hacking attempts and ensure a fair and secure ICO process.
+
 pragma solidity ^0.8.0;
 
+// Importing the ERC20, Ownable, and SafeMath contracts from the OpenZeppelin library
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
-pragma solidity ^0.8.0;
-
-
-contract WrappedChainPQCToken is ERC20 {
-    address public owner;
-
-    modifier onlyOwner {
-        require(owner == msg.sender, "Only owner can do this");
-        _;
-    }
-
-    constructor() ERC20("Wrapped ChainPQC Token", "WPQC") {
-        owner = msg.sender;
-    }
-
-    function mintWithTransfer(address from, address to, uint256 amount) public {
-        require(from == owner, "Minting is reserved for owner");
-        _mint(from, amount);
-        _transfer(from, to, amount);
-    }
-    function burn(address executor, address tokenOwner, uint256 amount) public {
-        require(executor == owner, "Burning is reserved for owner");
-        require(msg.sender == tokenOwner, "Only a sender can burn his own tokens");
-        _burn(tokenOwner, amount);
-    }
-}
+import "./WrappedChainPQCToken.sol";
 
 
+// WrappedChainPQCTokenICO is a contract for managing the ICO of the WrappedChainPQCToken
 contract WrappedChainPQCTokenICO is Ownable {
     using SafeMath for uint256;
 
     WrappedChainPQCToken public token;
 
+    // Constants for the ICO
     uint256 public constant MIN_INVESTMENT = 0.1 ether;
     uint256 public constant MIN_CAP = 50 ether;
     uint256 public constant MAX_TOKENS = 230000000000000000000000000; // 230 million tokens with 18 decimal places
@@ -48,34 +33,38 @@ contract WrappedChainPQCTokenICO is Ownable {
     uint256 public constant TOKEN_PRICE_INCREASE_PER_PERIOD = 200;
     uint256 public constant PERIOD_PRICE_INCREASE = 3 days;
 
+    // Variables for tracking the ICO progress
     uint256 public tokensSold;
     uint256 public weiRaised;
     uint256 public startTime;
     bool public icoEnded;
 
+    // Mapping to store the investments made by each address
     mapping(address => uint256) public investments;
 
+    // Events for logging various actions
     event TokensPurchased(address indexed buyer, uint256 amount);
     event Withdraw(address indexed owner, uint256 amount);
-    event LogUint256(uint256 message);
-    event LogAddress(address message);
-    event Log(string message);
     event EndICO(string message);
 
+    // Constructor initializes the token contract
     constructor(WrappedChainPQCToken _token) {
         token = _token;
     }
 
+    // startICO function mints the maximum number of tokens and sets the start time of the ICO
     function startICO() public payable {
         require(token.totalSupply() == 0, "Once can mint all coins");
         token.mintWithTransfer(msg.sender, address(this), MAX_TOKENS);
         startTime = block.timestamp;
     }
 
+    // Fallback function to allow users to buy tokens by sending ether directly to the contract
     receive() external payable {
         buyTokens();
     }
 
+    // buyTokens function allows users to buy tokens by sending ether to the contract
     function buyTokens() public payable {
         require(!icoEnded, "ICO has ended.");
         require(block.timestamp < startTime.add(ICO_DURATION), "ICO ended.");
@@ -91,6 +80,7 @@ contract WrappedChainPQCTokenICO is Ownable {
         emit TokensPurchased(msg.sender, tokens);
     }
 
+    // calculateTokenAmount function calculates the number of tokens a user will receive for a given amount of ether
     function calculateTokenAmount(uint256 weiAmount) public view returns (uint256) {
         uint256 elapsedTime = block.timestamp.sub(startTime);
         // Calculate the number of months that have passed since the ICO started
@@ -102,6 +92,7 @@ contract WrappedChainPQCTokenICO is Ownable {
         return tokenAmount;
     }
 
+    // endICO function ends the ICO and burns any remaining tokens
     function endICO() payable public onlyOwner {
         require(!icoEnded, "ICO has already ended.");
         require(block.timestamp >= startTime.add(ICO_DURATION), "ICO has not yet ended.");
@@ -114,12 +105,15 @@ contract WrappedChainPQCTokenICO is Ownable {
         emit EndICO("ICO has ended");
     }
 
+    // withdraw function allows the owner to withdraw the raised ether if the minimum cap is reached
     function withdraw() public payable onlyOwner {
         require(weiRaised >= MIN_CAP, "Minimum value not reached.");
         uint256 balance = address(this).balance;
         payable(msg.sender).transfer(balance);
         emit Withdraw(msg.sender, balance);
     }
+
+    // refund function allows users to get a refund if the ICO has ended and the minimum cap is not reached
     function refund() public {
         require(icoEnded, "ICO has not ended.");
         require(weiRaised < MIN_CAP, "Minimum value reached.");
