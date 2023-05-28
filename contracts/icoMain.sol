@@ -40,12 +40,12 @@ contract WrappedChainPQCTokenICO is Ownable {
     WrappedChainPQCToken public token;
 
     uint256 public constant MIN_INVESTMENT = 0.1 ether;
-    uint256 public constant MIN_CAP = 5 ether;
+    uint256 public constant MIN_CAP = 50 ether;
     uint256 public constant MAX_TOKENS = 230000000000000000000000000; // 230 million tokens with 18 decimal places
     uint256 public constant ICO_DURATION = 180 days;
     uint256 public constant TOKENS_PER_ETH_START = 25000; // 0.00004 ETH per token
-    uint256 public constant TOKENS_PER_ETH_END = 5000; // 0.0002 ETH per token
-    uint256 public constant TOKEN_PRICE_INCREASE_PER_PERIOD = 400;
+    uint256 public constant TOKENS_PER_ETH_END = 10000; // 0.0001 ETH per token
+    uint256 public constant TOKEN_PRICE_INCREASE_PER_PERIOD = 200;
     uint256 public constant PERIOD_PRICE_INCREASE = 3 days;
 
     uint256 public tokensSold;
